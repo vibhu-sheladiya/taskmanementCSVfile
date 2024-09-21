@@ -13,6 +13,9 @@ const taskSchema = new mongoose.Schema({
         type: String,
         trim: true  // Removes whitespace
     },
+    csvFile:{
+        type:String,
+    },
     dueDate: {
         type: Date,
         // required: [true, 'Due date is required'],  // Ensure due date is provided

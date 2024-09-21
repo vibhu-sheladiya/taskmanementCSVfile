@@ -2,7 +2,7 @@ const express = require('express');
 const taskController = require('../../controllers/taskcontroller');
 // const taskController = require('../../controllers/getFilteredTasks');
 
-const validateCSV = require('../../middlewares/validateCSV');
+const upload  = require('../../middlewares/upload');
 
 const router = express.Router();
 
@@ -25,10 +25,12 @@ const router = express.Router();
 
 
 // Route to export tasks to CSV
-router.get('/export', taskController.exportTasksToCSV);
+router.get('/export', taskController.exportTasks);
+router.post('/import',  upload('/csvFile', 'csvFile'), taskController.importTasks);
 
 // Route to import tasks from CSV
-router.post('/import', validateCSV, taskController.importTasksFromCSV);
+// router.post('/import', validateCSV.single('csvFile'), taskController.importTasksFromCSV);
+// router.post('/import', validateCSV, taskController.importTasks);
 // router.post('/import', upload.single('csvFile'), validateCSV, taskController.importTasksFromCSV);
 
 router.get('/filter', taskController.getFilteredTasks);

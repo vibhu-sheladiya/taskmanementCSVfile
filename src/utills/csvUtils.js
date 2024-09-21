@@ -1,30 +1,52 @@
-const { Parser } = require('json2csv');
 const csvParser = require('csv-parser');
+const { createObjectCsvWriter } = require('csv-writer');
 const fs = require('fs');
+const Task = require('../models/taskModel');
 
-// Generate CSV from data
-exports.generateCSV = (tasks) => {
-    const fields = ['title', 'description', 'dueDate', 'priority', 'status', 'assignee'];
-    const parser = new Parser({ fields });
-    return parser.parse(tasks);
+const exportTasksToCSV = async (tasks, filePath) => {
+    const csvWriter = createObjectCsvWriter({
+        path: filePath,
+        header: [
+            { id: 'title', title: 'Title' },
+            { id: 'description', title: 'Description' },
+            { id: 'dueDate', title: 'Due Date' },
+            { id: 'priority', title: 'Priority' },
+            { id: 'status', title: 'Status' },
+            { id: 'assignedUsers', title: 'Assigned Users' }
+        ]
+    });
+
+    const records = tasks.map(task => ({
+        title: task.title,
+        description: task.description,
+        dueDate: task.dueDate.toISOString(),
+        priority: task.priority,
+        status: task.status,
+        assignedUsers: task.assignedUsers.join(';') // Assuming multiple users separated by semicolon
+    }));
+
+    await csvWriter.writeRecords(records);
 };
 
-// Parse CSV file data
-exports.parseCSV = (csvData) => {
+const importTasksFromCSV = (filePath) => {
     return new Promise((resolve, reject) => {
-        const results = [];
-        fs.createReadStream(csvData)
+        const tasks = [];
+        const errors = [];
+        fs.createReadStream(filePath)
             .pipe(csvParser())
-            .on('data', (data) => results.push(data))
-            .on('end', () => resolve(results))
-            .on('error', (err) => reject(err));
+            .on('data', (row) => {
+                tasks.push(row);
+            })
+            .on('end', () => {
+                resolve(tasks);
+            })
+            .on('error', (err) => {
+                reject(err);
+            });
     });
 };
 
-// Task validation logic
-exports.validateTaskData = (task) => {
-    if (!task.title || task.title.trim() === '') return 'Title is required';
-    if (new Date(task.dueDate) < new Date()) return 'Due date cannot be in the past';
-    if (!['low', 'medium', 'high'].includes(task.priority)) return 'Invalid priority';
-    return null;
+module.exports = {
+    exportTasksToCSV,
+    importTasksFromCSV
 };

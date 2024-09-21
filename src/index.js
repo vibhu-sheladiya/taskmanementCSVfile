@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const taskRoutes = require('./routes/v1/task.route');
 const router = require("././routes/v1/task.route");
 const errorHandler = require('./middlewares/errorHandler');
+const path = require('path');
 
 // Load environment variables from .env
 dotenv.config();
@@ -16,6 +17,10 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Database connection
 mongoose.connect('mongodb://localhost:27017/task-m-csv', { useNewUrlParser: true, useUnifiedTopology: true })
